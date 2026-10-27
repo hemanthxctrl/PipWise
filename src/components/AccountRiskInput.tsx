@@ -19,17 +19,12 @@ export const AccountRiskInput: React.FC<AccountRiskInputProps> = ({
   isCustomRisk,
   onToggleCustomRisk
 }) => {
-  const riskAmount = (balance * riskPercent) / 100;
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Account Balance */}
       <div className="form-group">
         <label htmlFor="account-balance-input" className="form-label">
           <span>Account Balance (USD)</span>
-          <span style={{ color: 'var(--accent-blue)', fontFamily: 'var(--font-mono)' }}>
-            Risk Budget: ${riskAmount.toFixed(2)}
-          </span>
         </label>
         <div className="input-with-symbol">
           <input

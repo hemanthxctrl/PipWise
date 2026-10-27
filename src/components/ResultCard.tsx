@@ -43,13 +43,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           <span className="metric-title">Target Risk Budget</span>
           <span className="metric-number">${result.riskBudgetUSD.toFixed(2)} ({riskPercent}%)</span>
         </div>
-
-        <div className="metric-item">
-          <span className="metric-title">Estimated Loss at Stop</span>
-          <span className={`metric-number ${result.estimatedLossUSD > result.riskBudgetUSD ? 'danger' : 'success'}`}>
-            ${result.estimatedLossUSD.toFixed(2)} ({result.effectiveRiskPercent.toFixed(2)}%)
-          </span>
-        </div>
       </div>
     </div>
   );
