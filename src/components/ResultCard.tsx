@@ -53,8 +53,8 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       </div>
 
       {/* Capital Safety Footer */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-        <ShieldCheck size={14} style={{ color: 'var(--accent-green)' }} />
+      <div className="result-footer">
+        <ShieldCheck size={14} style={{ color: 'var(--accent-green)', flexShrink: 0 }} />
         <span>Strict Capital Protection: Size rounded down to lot step</span>
       </div>
     </div>
