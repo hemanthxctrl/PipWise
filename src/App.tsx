@@ -260,6 +260,11 @@ export const App: React.FC = () => {
         riskPercent={riskPercent}
       />
 
+      {/* Creator Credit Footer */}
+      <footer className="app-footer">
+        Designed &amp; Developed by <span className="footer-author">Hemanth</span>
+      </footer>
+
       {/* Instrument Specification Drawer Modal */}
       <InstrumentSettingsModal
         isOpen={isSettingsOpen}

@@ -630,3 +630,25 @@ body {
   color: var(--text-primary);
   border-color: var(--border-focus);
 }
+
+/* Creator Credit Footer */
+.app-footer {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+  padding: 6px 0 12px 0;
+  line-height: 1.5;
+  user-select: none;
+}
+
+[data-theme="light"] .app-footer {
+  color: #64748b;
+}
+
+.footer-author {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
