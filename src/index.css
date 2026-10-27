@@ -362,11 +362,13 @@ body {
   border-radius: var(--radius-sm);
   padding: 2px;
   gap: 2px;
+  width: 100%;
 }
 
 .unit-btn {
-  flex: 1;
-  padding: 5px 8px;
+  flex: 1 1 50%;
+  width: 50%;
+  padding: 6px 8px;
   font-size: 0.75rem;
   font-weight: 600;
   background: transparent;
@@ -374,7 +376,7 @@ body {
   border-radius: 6px;
   color: var(--text-muted);
   cursor: pointer;
-  text-transform: capitalize;
+  text-align: center;
   transition: all 0.15s ease;
 }
 

@@ -56,8 +56,58 @@ export const App: React.FC = () => {
   }, [theme]);
 
   // Active instrument specification (custom override if saved, otherwise default)
-  const activeSpec: InstrumentSpec =
+  const rawSpec: InstrumentSpec =
     customSpecs[symbol] || DEFAULT_INSTRUMENT_SPECS[symbol] || DEFAULT_INSTRUMENT_SPECS.XAUUSD;
+
+  // Sanitize activeSpec to guarantee 'ticks' is never a supported unit or default
+  const activeSpec: InstrumentSpec = React.useMemo(() => {
+    const supported = rawSpec.supportedStopUnits.filter(u => u !== 'ticks');
+    const finalSupported = supported.length > 0
+      ? supported
+      : (rawSpec.category === 'FOREX' ? ['price_diff', 'pips'] : ['price_diff', 'points']);
+    let defaultUnit = rawSpec.defaultStopUnit;
+    if (defaultUnit === 'ticks') {
+      defaultUnit = rawSpec.category === 'FOREX' ? 'pips' : 'price_diff';
+    }
+    return {
+      ...rawSpec,
+      supportedStopUnits: finalSupported,
+      defaultStopUnit: defaultUnit
+    };
+  }, [rawSpec]);
+
+  // Migrate any saved custom specs in localStorage that contain 'ticks'
+  useEffect(() => {
+    try {
+      const rawStored = window.localStorage.getItem('pipwise_instrument_specs');
+      if (rawStored && rawStored.includes('ticks')) {
+        const parsed = JSON.parse(rawStored) as Record<string, InstrumentSpec>;
+        let hasChanges = false;
+        const cleaned: Record<string, InstrumentSpec> = {};
+        for (const [key, spec] of Object.entries(parsed)) {
+          const supported = (spec.supportedStopUnits || []).filter(u => u !== 'ticks');
+          let def = spec.defaultStopUnit;
+          if (def === 'ticks') {
+            def = spec.category === 'FOREX' ? 'pips' : 'price_diff';
+            hasChanges = true;
+          }
+          if (supported.length !== (spec.supportedStopUnits || []).length) {
+            hasChanges = true;
+          }
+          cleaned[key] = {
+            ...spec,
+            supportedStopUnits: supported.length > 0 ? supported : ['price_diff', 'pips'],
+            defaultStopUnit: def
+          };
+        }
+        if (hasChanges) {
+          setCustomSpecs(cleaned);
+        }
+      }
+    } catch (e) {
+      console.warn('Error migrating customSpecs:', e);
+    }
+  }, [setCustomSpecs]);
 
   // Stop loss states
   const [stopLossDistance, setStopLossDistance] = useState<number>(() => {
@@ -67,10 +117,36 @@ export const App: React.FC = () => {
     return 10;
   });
 
-  const [selectedUnit, setSelectedUnit] = useState<StopLossUnit>(activeSpec.defaultStopUnit);
+  const [selectedUnit, setSelectedUnit] = useState<StopLossUnit>(() => {
+    return activeSpec.defaultStopUnit === 'ticks'
+      ? (activeSpec.category === 'FOREX' ? 'pips' : 'price_diff')
+      : activeSpec.defaultStopUnit;
+  });
   const [usePriceLevels, setUsePriceLevels] = useState<boolean>(false);
   const [entryPrice, setEntryPrice] = useState<number | undefined>(undefined);
   const [stopPrice, setStopPrice] = useState<number | undefined>(undefined);
+
+  // If a previously saved preference or state has 'ticks', migrate it safely
+  useEffect(() => {
+    if ((selectedUnit as string) === 'ticks') {
+      const targetUnit: StopLossUnit =
+        activeSpec.category === 'FOREX'
+          ? 'pips'
+          : (activeSpec.supportedStopUnits.includes('price_diff') ? 'price_diff' : 'points');
+
+      // Preserve actual stop-loss price distance by converting tick count using tickSize
+      const priceDiff = stopLossDistance * (activeSpec.tickSize || 1);
+      if (priceDiff > 0 && !isNaN(priceDiff)) {
+        const convertedDistance = convertPriceDiffToTargetUnit(priceDiff, targetUnit, activeSpec, entryPrice);
+        setSelectedUnit(targetUnit);
+        setStopLossDistance(convertedDistance);
+      } else {
+        // If conversion is not possible, require the user to re-enter
+        setSelectedUnit(targetUnit);
+        setStopLossDistance(0);
+      }
+    }
+  }, [selectedUnit, activeSpec, stopLossDistance, entryPrice]);
 
   // Exchange rate for non-USD loss currencies
   const defaultRate = DEFAULT_CONVERSION_RATES[activeSpec.lossCurrency] || 1.0;

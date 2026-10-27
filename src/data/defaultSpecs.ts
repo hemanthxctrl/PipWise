@@ -27,7 +27,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 50.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['price_diff', 'percent', 'ticks'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'price_diff'
   },
   ETHUSD: {
@@ -45,7 +45,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.05,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['price_diff', 'percent', 'ticks'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'price_diff'
   },
 
@@ -65,7 +65,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.1,
     maxQuantity: 500.0,
     quantityStep: 0.1,
-    supportedStopUnits: ['points', 'ticks', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'points'],
     defaultStopUnit: 'points'
   },
   JP225: {
@@ -83,7 +83,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.1,
     maxQuantity: 500.0,
     quantityStep: 0.1,
-    supportedStopUnits: ['points', 'ticks', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'points'],
     defaultStopUnit: 'points'
   },
 
@@ -103,7 +103,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['price_diff', 'ticks', 'pips'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'price_diff'
   },
   XAGUSD: {
@@ -121,7 +121,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 50.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['price_diff', 'ticks', 'pips'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'price_diff'
   },
   USOIL: {
@@ -139,7 +139,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['price_diff', 'ticks'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'price_diff'
   },
 
@@ -159,7 +159,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['pips', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'pips'
   },
   GBPUSD: {
@@ -177,7 +177,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['pips', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'pips'
   },
   AUDUSD: {
@@ -195,7 +195,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['pips', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'pips'
   },
   NZDUSD: {
@@ -213,7 +213,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['pips', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'pips'
   },
   USDJPY: {
@@ -231,7 +231,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['pips', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'pips'
   },
   USDCHF: {
@@ -249,7 +249,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['pips', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'pips'
   },
   USDCAD: {
@@ -267,7 +267,7 @@ export const DEFAULT_INSTRUMENT_SPECS: Record<string, InstrumentSpec> = {
     minQuantity: 0.01,
     maxQuantity: 100.0,
     quantityStep: 0.01,
-    supportedStopUnits: ['pips', 'price_diff'],
+    supportedStopUnits: ['price_diff', 'pips'],
     defaultStopUnit: 'pips'
   }
 };

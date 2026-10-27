@@ -15,12 +15,15 @@ interface StopLossInputProps {
   onStopPriceChange: (val?: number) => void;
 }
 
-const UNIT_LABELS: Record<StopLossUnit, string> = {
-  price_diff: 'Price ($)',
-  pips: 'Pips',
-  ticks: 'Ticks',
-  points: 'Points',
-  percent: 'Percent (%)'
+export const getUnitLabel = (unit: StopLossUnit, spec: InstrumentSpec): string => {
+  if (unit === 'price_diff') {
+    return spec.quoteCurrency === 'USD' ? 'Price ($)' : `Price (${spec.quoteCurrency})`;
+  }
+  if (unit === 'pips') return 'Pips';
+  if (unit === 'points') return 'Points';
+  if (unit === 'percent') return 'Percent (%)';
+  if (unit === 'ticks') return 'Ticks';
+  return unit;
 };
 
 export const StopLossInput: React.FC<StopLossInputProps> = ({
@@ -36,6 +39,9 @@ export const StopLossInput: React.FC<StopLossInputProps> = ({
   stopPrice,
   onStopPriceChange
 }) => {
+  // Filter out 'ticks' so only Price ($) and Pips (or Points) are visible
+  const visibleUnits = spec.supportedStopUnits.filter(unit => unit !== 'ticks');
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       <div className="form-group">
@@ -60,14 +66,14 @@ export const StopLossInput: React.FC<StopLossInputProps> = ({
         {/* Unit switcher buttons */}
         {!usePriceLevels && (
           <div className="unit-switcher" style={{ marginBottom: '8px' }}>
-            {spec.supportedStopUnits.map(unit => (
+            {visibleUnits.map(unit => (
               <button
                 key={unit}
                 type="button"
                 className={`unit-btn ${selectedUnit === unit ? 'active' : ''}`}
                 onClick={() => onSelectUnit(unit)}
               >
-                {UNIT_LABELS[unit]}
+                {getUnitLabel(unit, spec)}
               </button>
             ))}
           </div>
@@ -85,7 +91,7 @@ export const StopLossInput: React.FC<StopLossInputProps> = ({
               onChange={(e) => onStopLossDistanceChange(Math.max(0, parseFloat(e.target.value) || 0))}
               placeholder="e.g. 20"
             />
-            <span className="unit-tag">{UNIT_LABELS[selectedUnit]}</span>
+            <span className="unit-tag">{getUnitLabel(selectedUnit, spec)}</span>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
