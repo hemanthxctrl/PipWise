@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, ShieldCheck } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { CalculationResult } from '../types/calculator';
 
 interface ResultCardProps {
@@ -50,12 +50,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             ${result.estimatedLossUSD.toFixed(2)} ({result.effectiveRiskPercent.toFixed(2)}%)
           </span>
         </div>
-      </div>
-
-      {/* Capital Safety Footer */}
-      <div className="result-footer">
-        <ShieldCheck size={14} style={{ color: 'var(--accent-green)', flexShrink: 0 }} />
-        <span>Strict Capital Protection: Size rounded down to lot step</span>
       </div>
     </div>
   );
