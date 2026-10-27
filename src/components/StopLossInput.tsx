@@ -39,8 +39,9 @@ export const StopLossInput: React.FC<StopLossInputProps> = ({
   stopPrice,
   onStopPriceChange
 }) => {
-  // Filter out 'ticks' so only Price ($) and Pips (or Points) are visible
-  const visibleUnits = spec.supportedStopUnits.filter(unit => unit !== 'ticks');
+  void spec;
+  void selectedUnit;
+  void onSelectUnit;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -63,22 +64,7 @@ export const StopLossInput: React.FC<StopLossInputProps> = ({
           </button>
         </div>
 
-        {/* Unit switcher buttons */}
-        {!usePriceLevels && (
-          <div className="unit-switcher" style={{ marginBottom: '8px' }}>
-            {visibleUnits.map(unit => (
-              <button
-                key={unit}
-                type="button"
-                className={`unit-btn ${selectedUnit === unit ? 'active' : ''}`}
-                onClick={() => onSelectUnit(unit)}
-              >
-                {getUnitLabel(unit, spec)}
-              </button>
-            ))}
-          </div>
-        )}
-
+        {/* Single Direct Distance Input with Pips suffix */}
         {!usePriceLevels ? (
           <div className="input-with-symbol">
             <input
@@ -87,11 +73,11 @@ export const StopLossInput: React.FC<StopLossInputProps> = ({
               className="custom-input"
               value={stopLossDistance || ''}
               min="0.00001"
-              step={selectedUnit === 'pips' || selectedUnit === 'points' ? '1' : '0.01'}
+              step="1"
               onChange={(e) => onStopLossDistanceChange(Math.max(0, parseFloat(e.target.value) || 0))}
               placeholder="e.g. 20"
             />
-            <span className="unit-tag">{getUnitLabel(selectedUnit, spec)}</span>
+            <span className="unit-tag">Pips</span>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>

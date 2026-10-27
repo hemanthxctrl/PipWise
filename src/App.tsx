@@ -10,7 +10,7 @@ import { DEFAULT_INSTRUMENT_SPECS } from './data/defaultSpecs';
 import { InstrumentSpec, StopLossUnit } from './types/instrument';
 import { CalculationInput } from './types/calculator';
 import { calculatePositionSize } from './engine/calculator';
-import { convertPriceDiffToTargetUnit, convertStopLossToPriceDiff } from './engine/unitConverter';
+import { convertStopLossToPriceDiff } from './engine/unitConverter';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { usePWAInstall } from './hooks/usePWAInstall';
 
@@ -59,45 +59,36 @@ export const App: React.FC = () => {
   const rawSpec: InstrumentSpec =
     customSpecs[symbol] || DEFAULT_INSTRUMENT_SPECS[symbol] || DEFAULT_INSTRUMENT_SPECS.XAUUSD;
 
-  // Sanitize activeSpec to guarantee 'ticks' is never a supported unit or default
+  // Sanitize activeSpec to guarantee 'pips' is the only supported unit and default
   const activeSpec: InstrumentSpec = React.useMemo(() => {
-    const supported = rawSpec.supportedStopUnits.filter(u => u !== 'ticks');
-    const finalSupported = supported.length > 0
-      ? supported
-      : (rawSpec.category === 'FOREX' ? ['price_diff', 'pips'] : ['price_diff', 'points']);
-    let defaultUnit = rawSpec.defaultStopUnit;
-    if (defaultUnit === 'ticks') {
-      defaultUnit = rawSpec.category === 'FOREX' ? 'pips' : 'price_diff';
-    }
     return {
       ...rawSpec,
-      supportedStopUnits: finalSupported,
-      defaultStopUnit: defaultUnit
+      supportedStopUnits: ['pips'] as StopLossUnit[],
+      defaultStopUnit: 'pips' as StopLossUnit
     };
   }, [rawSpec]);
 
-  // Migrate any saved custom specs in localStorage that contain 'ticks'
+  // Migrate any saved custom specs in localStorage to pip-only stop loss configuration
   useEffect(() => {
     try {
       const rawStored = window.localStorage.getItem('pipwise_instrument_specs');
-      if (rawStored && rawStored.includes('ticks')) {
+      if (rawStored) {
         const parsed = JSON.parse(rawStored) as Record<string, InstrumentSpec>;
         let hasChanges = false;
         const cleaned: Record<string, InstrumentSpec> = {};
         for (const [key, spec] of Object.entries(parsed)) {
-          const supported = (spec.supportedStopUnits || []).filter(u => u !== 'ticks');
-          let def = spec.defaultStopUnit;
-          if (def === 'ticks') {
-            def = spec.category === 'FOREX' ? 'pips' : 'price_diff';
-            hasChanges = true;
-          }
-          if (supported.length !== (spec.supportedStopUnits || []).length) {
+          if (
+            spec.defaultStopUnit !== 'pips' ||
+            !spec.supportedStopUnits ||
+            spec.supportedStopUnits.length !== 1 ||
+            spec.supportedStopUnits[0] !== 'pips'
+          ) {
             hasChanges = true;
           }
           cleaned[key] = {
             ...spec,
-            supportedStopUnits: supported.length > 0 ? supported : ['price_diff', 'pips'],
-            defaultStopUnit: def
+            supportedStopUnits: ['pips'] as StopLossUnit[],
+            defaultStopUnit: 'pips' as StopLossUnit
           };
         }
         if (hasChanges) {
@@ -109,42 +100,32 @@ export const App: React.FC = () => {
     }
   }, [setCustomSpecs]);
 
-  // Stop loss states
+  // Stop loss distance state: sensible defaults in pips for instruments
+  const getDefaultPipsForSymbol = (sym: string): number => {
+    if (sym === 'XAUUSD') return 30; // 30 pips = $3.00 gold move (0.10 pipSize)
+    if (sym === 'NAS100' || sym === 'JP225') return 25;
+    if (sym === 'USOIL') return 50;
+    return 20;
+  };
+
   const [stopLossDistance, setStopLossDistance] = useState<number>(() => {
-    if (symbol === 'XAUUSD') return 3.0; // Default $3 gold move
-    if (activeSpec.defaultStopUnit === 'pips') return 20;
-    if (activeSpec.defaultStopUnit === 'points') return 25;
-    return 10;
+    return getDefaultPipsForSymbol(symbol);
   });
 
-  const [selectedUnit, setSelectedUnit] = useState<StopLossUnit>(() => {
-    return activeSpec.defaultStopUnit === 'ticks'
-      ? (activeSpec.category === 'FOREX' ? 'pips' : 'price_diff')
-      : activeSpec.defaultStopUnit;
-  });
+  const [selectedUnit, setSelectedUnit] = useState<StopLossUnit>('pips');
   const [usePriceLevels, setUsePriceLevels] = useState<boolean>(false);
   const [entryPrice, setEntryPrice] = useState<number | undefined>(undefined);
   const [stopPrice, setStopPrice] = useState<number | undefined>(undefined);
 
-  // If a previously saved preference or state has 'ticks', migrate it safely
+  // If previous state had a non-pips unit (e.g. price_diff or ticks), migrate distance to pips accurately
   useEffect(() => {
-    if ((selectedUnit as string) === 'ticks') {
-      const targetUnit: StopLossUnit =
-        activeSpec.category === 'FOREX'
-          ? 'pips'
-          : (activeSpec.supportedStopUnits.includes('price_diff') ? 'price_diff' : 'points');
-
-      // Preserve actual stop-loss price distance by converting tick count using tickSize
-      const priceDiff = stopLossDistance * (activeSpec.tickSize || 1);
-      if (priceDiff > 0 && !isNaN(priceDiff)) {
-        const convertedDistance = convertPriceDiffToTargetUnit(priceDiff, targetUnit, activeSpec, entryPrice);
-        setSelectedUnit(targetUnit);
-        setStopLossDistance(convertedDistance);
-      } else {
-        // If conversion is not possible, require the user to re-enter
-        setSelectedUnit(targetUnit);
-        setStopLossDistance(0);
-      }
+    if ((selectedUnit as string) !== 'pips') {
+      const currentPriceDiff = convertStopLossToPriceDiff(stopLossDistance, selectedUnit, activeSpec, entryPrice);
+      const convertedPips = activeSpec.pipSize > 0
+        ? Number((currentPriceDiff / activeSpec.pipSize).toFixed(1))
+        : getDefaultPipsForSymbol(activeSpec.symbol);
+      setSelectedUnit('pips');
+      setStopLossDistance(convertedPips > 0 ? convertedPips : getDefaultPipsForSymbol(activeSpec.symbol));
     }
   }, [selectedUnit, activeSpec, stopLossDistance, entryPrice]);
 
@@ -165,27 +146,15 @@ export const App: React.FC = () => {
     }
   }, [activeSpec.lossCurrency, symbol]);
 
-  // Reset stop unit when instrument changes
+  // Reset stop unit to pips and set default distance when symbol changes
   useEffect(() => {
-    setSelectedUnit(activeSpec.defaultStopUnit);
-    if (activeSpec.symbol === 'XAUUSD') {
-      setStopLossDistance(3.0);
-    } else if (activeSpec.defaultStopUnit === 'pips') {
-      setStopLossDistance(20);
-    } else if (activeSpec.defaultStopUnit === 'points') {
-      setStopLossDistance(25);
-    } else {
-      setStopLossDistance(10);
-    }
-  }, [symbol, activeSpec.defaultStopUnit, activeSpec.symbol]);
+    setSelectedUnit('pips');
+    setStopLossDistance(getDefaultPipsForSymbol(symbol));
+  }, [symbol]);
 
-  // Handle switching stop-loss units seamlessly without changing effective distance
+  // Handle switching stop-loss units seamlessly (if invoked)
   const handleSelectUnit = (newUnit: StopLossUnit) => {
-    if (newUnit === selectedUnit) return;
-    const currentPriceDiff = convertStopLossToPriceDiff(stopLossDistance, selectedUnit, activeSpec, entryPrice);
-    const convertedDistance = convertPriceDiffToTargetUnit(currentPriceDiff, newUnit, activeSpec, entryPrice);
     setSelectedUnit(newUnit);
-    setStopLossDistance(convertedDistance);
   };
 
   // Settings Modal State
